@@ -1,0 +1,144 @@
+# This config file uses nginx fastcgi-cache
+fastcgi_cache_path /var/www/cache/example.local levels=1:2 keys_zone=example.local:100m inactive=60m;
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name example.local;
+
+    root /var/www/html;
+
+    index index.php index.htm index.html;
+
+    access_log /var/log/nginx/example.local_access.log;
+    error_log /var/log/nginx/example.local_error.log;
+
+    include snippets/acme-challenge.conf;
+
+    # Exclusions
+    include snippets/exclusions.conf;
+
+    # Security
+    include snippets/security.conf;
+
+    # Static Content
+    include snippets/static-files.conf;
+
+    # Fastcgi cache rules
+    include snippets/fastcgi-cache.conf;
+
+    include snippets/limits.conf;
+
+    include snippets/nginx-cloudflare.conf;
+
+    location / {
+            try_files $uri $uri/ /index.php?$args;
+    }
+
+    location ~ \.php$ {
+        try_files $uri =404;
+        include snippets/fastcgi-params.conf;
+
+        fastcgi_pass wordpress:9000;
+
+        # Skip cache based on rules in snippets/fastcgi-cache.conf.
+        fastcgi_cache_bypass $skip_cache;
+        fastcgi_no_cache $skip_cache;
+
+        # Define memory zone for caching. Should match key_zone in fastcgi_cache_path above.
+        fastcgi_cache example.local;
+
+        # Define caching time.
+        fastcgi_cache_valid 60m;
+        #increase timeouts
+        fastcgi_read_timeout 6000;
+        fastcgi_connect_timeout 6000;
+        fastcgi_send_timeout 6000;
+        proxy_read_timeout 6000;
+        proxy_connect_timeout 6000;
+        proxy_send_timeout 6000;
+        send_timeout 6000;
+
+        #these lines should be the ones to allow Cloudflare Flexible SSL to be used so the server does not need to decrypt SSL
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Server $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-NginX-Proxy true;
+
+    }
+
+}
+
+server {
+    listen              443 ssl default_server;
+    listen              [::]:443 ssl default_server ;
+    server_name example.local www.example.local;
+
+    root /var/www/html;
+
+    index index.php index.htm index.html;
+
+    access_log /var/log/nginx/example.local_ssl_access.log;
+    error_log /var/log/nginx/example.local_ssl_error.log;
+
+    ssl_certificate           /etc/letsencrypt/live/example.local/fullchain.pem;
+    ssl_certificate_key       /etc/letsencrypt/live/example.local/privkey.pem;
+    #ssl_trusted_certificate   /etc/letsencrypt/live/example.local/chain.pem;
+
+    # Exclusions
+    include snippets/exclusions.conf;
+
+    # Security
+    include snippets/security.conf;
+
+    # Static Content
+    include snippets/static-files.conf;
+
+    # Fastcgi cache rules
+    include snippets/fastcgi-cache.conf;
+
+    include snippets/limits.conf;
+
+    include snippets/nginx-cloudflare.conf;
+
+    location / {
+            try_files $uri $uri/ /index.php?$args;
+    }
+
+    location ~ \.php$ {
+        try_files $uri =404;
+        include snippets/fastcgi-params.conf;
+
+        fastcgi_pass wordpress:9000;
+
+        # Skip cache based on rules in snippets/fastcgi-cache.conf.
+        fastcgi_cache_bypass $skip_cache;
+        fastcgi_no_cache $skip_cache;
+
+        # Define memory zone for caching. Should match key_zone in fastcgi_cache_path above.
+        fastcgi_cache example.local;
+
+        # Define caching time.
+        fastcgi_cache_valid 60m;
+        #increase timeouts
+        fastcgi_read_timeout 6000;
+        fastcgi_connect_timeout 6000;
+        fastcgi_send_timeout 6000;
+        proxy_read_timeout 6000;
+        proxy_connect_timeout 6000;
+        proxy_send_timeout 6000;
+        send_timeout 6000;
+
+        #these lines should be the ones to allow Cloudflare Flexible SSL to be used so the server does not need to decrypt SSL if you wish
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Server $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-NginX-Proxy true;
+
+    }
+
+}
