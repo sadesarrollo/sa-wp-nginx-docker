@@ -58,5 +58,22 @@ services:
       - ${REDIS_CONF_DIR:-./redis}/conf/rocketstack.conf:/usr/local/etc/redis/rocketstack.conf
       - ${REDIS_DATA_DIR:-./data/redis}:/data
     restart: always
+  ftp:
+    image: stilliard/pure-ftpd:latest
+    container_name: ftp
+    ports:
+      - "21:21"
+      - "30000-30009:30000-30009"
+    environment:
+      PUBLICHOST: sectorasegurador.local
+      FTP_USER_NAME: ${FTP_USER_NAME:-user}
+      FTP_USER_PASS: ${FTP_USER_PASS:-password}
+      FTP_USER_HOME: "/var/www/html"
+      FTP_USER_UID: 33
+      FTP_USER_GID: 33
+    volumes:
+      - ${WORDPRESS_DATA_DIR:-./data/wordpress}:/var/www/html
+      - ${FTP_DATA_DIR:-./data/ftp}:/etc/ssl/privatec
+    restart: always
 
 
