@@ -75,8 +75,8 @@ cd ${REPO_DIR}
 docker-compose build
 
 # rename default.conf temporarily
-if [ -e ${REPO_DIR}/nginx/default.conf ]; then
-  mv ${REPO_DIR}/nginx/default.conf ${REPO_DIR}/nginx/default.conf.waitforletsencrypt
+if [ -e ${REPO_DIR}/nginx/conf/default.conf ]; then
+  mv ${REPO_DIR}/nginx/conf/default.conf ${REPO_DIR}/nginx/conf/default.conf.waitforletsencrypt
 fi
 
 docker-compose up -d
@@ -99,8 +99,8 @@ docker-compose stop
 docker-compose rm -f
 
 # reset default.conf if it was changed
-if [ -e ${REPO_DIR}/nginx/default.conf.waitforletsencrypt ]; then
-  mv ${REPO_DIR}/nginx/default.conf.waitforletsencrypt ${REPO_DIR}/nginx/default.conf
+if [ -e ${REPO_DIR}/nginx/conf/default.conf.waitforletsencrypt ]; then
+  mv ${REPO_DIR}/nginx/conf/default.conf.waitforletsencrypt ${REPO_DIR}/nginx/conf/default.conf
 fi
 
 cd ${LE_DIR}
