@@ -10,4 +10,5 @@ mysql/*.sh
 wordpress/
 !.env_example
 nginx/conf/default.conf
+nginx/conf/default.*.conf
 !nginx/snippets/

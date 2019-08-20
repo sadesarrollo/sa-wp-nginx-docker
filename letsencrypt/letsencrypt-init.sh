@@ -16,6 +16,9 @@ else
   cd ../
 fi
 REPO_DIR=$(dirname ${LE_DIR})
+echo "The REPO_DIR is: ${REPO_DIR}"
+echo "The LE_DIR is: ${LE_DIR}"
+
 
 # get full directory path
 if [ $(dirname ${SSL_CERTS_DIR}) = '.' ]; then
@@ -29,9 +32,10 @@ else
   CERTS_DATA=${SSL_CERTS_DATA_DIR}
 fi
 
+
 # Nginx config file for using Let's Encrypt
 _lets_encrypt_conf () {
-  local OUTFILE=lets_encrypt.conf
+  local OUTFILE=default.conf
   cat > $OUTFILE <<EOF
 server {
     listen      80;
@@ -49,6 +53,7 @@ server {
 }
 EOF
 }
+
 
 # FQDN_OR_IP should not include prefix of www.
 if [ "$#" -ne 1 ]; then
@@ -68,21 +73,26 @@ if [ ! -d "${CERTS_DATA}" ]; then
     mkdir ${CERTS_DATA}
 fi
 
+
 # Launch Nginx container with CERTS and CERTS_DATA mounts
 cd ${LE_DIR}
 _lets_encrypt_conf
 cd ${REPO_DIR}
 docker-compose build
 
+
 # rename default.conf temporarily
-if [ -e ${REPO_DIR}/nginx/default.conf ]; then
-  mv ${REPO_DIR}/nginx/default.conf ${REPO_DIR}/nginx/default.conf.waitforletsencrypt
+if [ -e ${REPO_DIR}/nginx/conf/default.conf ]; then
+  mv ${REPO_DIR}/nginx/conf/default.conf ${REPO_DIR}/nginx/conf/default.conf.waitforletsencrypt
+  mv ${LE_DIR}/default.conf ${REPO_DIR}/nginx/conf/default.conf
 fi
 
 docker-compose up -d
 sleep 5s
-docker cp ${LE_DIR}/lets_encrypt.conf nginx:/etc/nginx/conf.d/lets_encrypt.conf
+
+# docker cp ${LE_DIR}/default.conf nginx:/etc/nginx/conf.d/default.conf
 docker exec nginx /usr/sbin/nginx -s reload
+
 sleep 5s
 cd ${LE_DIR}
 
@@ -98,13 +108,14 @@ cd ${REPO_DIR}
 docker-compose stop
 docker-compose rm -f
 
+
 # reset default.conf if it was changed
-if [ -e ${REPO_DIR}/nginx/default.conf.waitforletsencrypt ]; then
-  mv ${REPO_DIR}/nginx/default.conf.waitforletsencrypt ${REPO_DIR}/nginx/default.conf
+if [ -e ${REPO_DIR}/nginx/conf/default.conf.waitforletsencrypt ]; then
+  mv ${REPO_DIR}/nginx/conf/default.conf.waitforletsencrypt ${REPO_DIR}/nginx/conf/default.conf
 fi
 
 cd ${LE_DIR}
-rm -f ${REPO_DIR}/lets_encrypt.conf
+# rm -f ${REPO_DIR}/default.conf
 
 echo "INFO: update the nginx/default.conf file"
 echo "-  4:   server_name ${FQDN_OR_IP};"
