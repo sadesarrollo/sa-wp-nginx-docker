@@ -65,7 +65,7 @@ services:
       - "21:21"
       - "30000-30009:30000-30009"
     environment:
-      PUBLICHOST: ${DOMAIN}
+      PUBLICHOST: ${IP}
       FTP_USER_NAME: ${FTP_USER_NAME:-user}
       FTP_USER_PASS: ${FTP_USER_PASS:-password}
       FTP_USER_HOME: /var/www/html/${DOMAIN}
