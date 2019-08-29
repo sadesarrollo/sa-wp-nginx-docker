@@ -75,15 +75,3 @@ services:
       - ${WORDPRESS_DATA_DIR:-./data/wordpress}:/var/www/html/${DOMAIN}
       - ${FTP_DATA_DIR:-./data/ftp}:/etc/ssl/privatec
     restart: always
-  logrotate:
-    image: blacklabelops/logrotate
-    container_name: logrotate
-    environment:
-      - LOGS_DIRECTORIES=./data/logs/
-      - LOGROTATE_COPIES=20
-      - LOGROTATE_COMPRESSION=compress
-      - LOGROTATE_INTERVAL=hourly
-      - LOGROTATE_CRONSCHEDULE=* * * * * *
-      - LOGROTATE_DATEFORMAT=-%Y-%m-%d-%s
-    volumes:
-      - ./data/logs/:/var/log/
