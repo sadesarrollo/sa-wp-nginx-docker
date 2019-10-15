@@ -1,0 +1,11 @@
+/docker/sa-wp-nginx-docker/data/logs/mysql/*.log {
+    rotate 30
+    daily
+    missingok
+    notifempty
+    compress
+    delaycompress
+    postrotate
+        [ ! -f /var/run/mysql.pid ] || kill -USR1 `cat /var/run/mysql.pid`
+    endscript
+}

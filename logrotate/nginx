@@ -1,0 +1,11 @@
+/docker/sa-wp-nginx-docker/data/logs/nginx/*.log {
+    rotate 30
+    daily
+    missingok
+    notifempty
+    compress
+    delaycompress
+    postrotate
+        [ ! -f /var/run/nginx.pid ] || kill -USR1 `cat /var/run/nginx.pid`
+    endscript
+}

@@ -2,7 +2,7 @@ version: '3.6'
 services:
 
   wordpress:
-    image: wordpress:${WORDPRESS_VERSION:-php7.3-fpm}
+    build: .
     container_name: ${WORDPRESS_CONTAINER:-wordpress}
     volumes:
       - ${WORDPRESS_DATA_DIR:-./data/wordpress}:/var/www/html/${DOMAIN}
@@ -23,6 +23,7 @@ services:
     container_name: mysql
     command: --default-authentication-plugin=mysql_native_password
     volumes:
+      - ${MYSQL_LOG_DIR:-./data/logs/mysql}:/var/log/mysql
       - ./data/mysql:/var/lib/mysql
       - ./mysql/conf/rocketstack.cnf:/etc/mysql/conf.d/rocketstack.cnf
     environment:
@@ -31,7 +32,7 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-password}
       - MYSQL_DATABASE=${MYSQL_DATABASE:-wordpress}
     restart: always
-
+    
   nginx:
     image: nginx:${NGINX_VERSION:-1.16}
     container_name: nginx
@@ -53,7 +54,7 @@ services:
     image: redis
     container_name: redis
     ports:
-      - '6379:6379'
+      - '127.0.0.1:6379:6379'
     volumes:
       - ${REDIS_CONF_DIR:-./redis}/conf/rocketstack.conf:/usr/local/etc/redis/rocketstack.conf
       - ${REDIS_DATA_DIR:-./data/redis}:/data
@@ -74,4 +75,7 @@ services:
     volumes:
       - ${WORDPRESS_DATA_DIR:-./data/wordpress}:/var/www/html/${DOMAIN}
       - ${FTP_DATA_DIR:-./data/ftp}:/etc/ssl/privatec
+    restart: always
+  mail:
+    image: bytemark/smtp
     restart: always
